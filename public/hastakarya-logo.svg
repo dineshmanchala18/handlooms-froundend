@@ -1,0 +1,25 @@
+<svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="600" height="600" fill="transparent"/>
+  
+  <!-- Circular decorative ring -->
+  <circle cx="300" cy="180" r="95" fill="none" stroke="#8B4513" stroke-width="12"/>
+  <circle cx="300" cy="180" r="80" fill="none" stroke="#8B4513" stroke-width="8"/>
+  
+  <!-- Decorative dots -->
+  <circle cx="220" cy="140" r="6" fill="#8B4513"/>
+  <circle cx="380" cy="140" r="6" fill="#8B4513"/>
+  <circle cx="410" cy="180" r="6" fill="#8B4513"/>
+  <circle cx="410" cy="220" r="6" fill="#8B4513"/>
+  <circle cx="190" cy="175" r="6" fill="#8B4513"/>
+  <circle cx="190" cy="225" r="6" fill="#8B4513"/>
+  
+  <!-- Letter H in circle -->
+  <text x="300" y="210" font-size="90" font-weight="bold" text-anchor="middle" fill="#8B4513" font-family="serif" font-style="italic">H</text>
+  
+  <!-- HASTAKARYA Text -->
+  <text x="300" y="350" font-size="72" font-weight="bold" text-anchor="middle" fill="#8B4513" font-family="'Arial', sans-serif" letter-spacing="8">HASTAKARYA</text>
+  
+  <!-- MADE BY HAND Text -->
+  <text x="300" y="420" font-size="36" text-anchor="middle" fill="#D2691E" font-family="'Arial', sans-serif" letter-spacing="4">MADE BY HAND</text>
+</svg>

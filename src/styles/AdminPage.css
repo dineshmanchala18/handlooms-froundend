@@ -1,0 +1,134 @@
+.admin-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: calc(var(--nav-height) + 2rem) 5% 3rem;
+  background: linear-gradient(180deg, #f5eee4 0%, #f8f4ef 100%);
+}
+
+.admin-header h1 {
+  font-size: 2.1rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.admin-header p {
+  color: #5f4a35;
+  margin-bottom: 1.5rem;
+}
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-stat-card {
+  background: #fff;
+  border: 1px solid rgba(139, 69, 19, 0.15);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 6px 18px rgba(44, 24, 16, 0.08);
+}
+
+.admin-stat-label {
+  color: #6f5540;
+  font-size: 0.88rem;
+  margin-bottom: 0.35rem;
+}
+
+.admin-stat-value {
+  color: var(--dark-color);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.admin-management-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.admin-panel-card {
+  background: #fff;
+  border: 1px solid rgba(139, 69, 19, 0.15);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(44, 24, 16, 0.08);
+}
+
+.admin-panel-card h2 {
+  color: var(--primary-color);
+  margin-bottom: 0.7rem;
+  font-size: 1.05rem;
+}
+
+.admin-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.admin-table th,
+.admin-table td {
+  border-bottom: 1px solid rgba(139, 69, 19, 0.15);
+  text-align: left;
+  padding: 0.65rem 0.55rem;
+  color: #3f2b1b;
+  font-size: 0.9rem;
+}
+
+.admin-table th {
+  color: #5e432f;
+  font-weight: 700;
+  background: #fff8f0;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-actions button {
+  border: 1px solid rgba(139, 69, 19, 0.25);
+  background: #fff;
+  color: #6d3f19;
+  border-radius: 8px;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.admin-actions button:hover {
+  background: #f6ece2;
+}
+
+.admin-inline-actions {
+  margin-top: 0.8rem;
+}
+
+.admin-product-image {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(139, 69, 19, 0.16);
+  background: #f7efe6;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .admin-page {
+    padding: calc(var(--nav-height) + 4.5rem) 1rem 2rem;
+  }
+
+  .admin-panel-card {
+    padding: 0.8rem;
+  }
+}
