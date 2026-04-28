@@ -5,7 +5,7 @@ export const AuthContext = createContext();
 
 const isAuthApiUnavailable = (error) => {
   const status = error?.response?.status;
-  return !error?.response || status === 404 || status === 405;
+  return !error?.response || [404, 405, 502, 503, 504].includes(status);
 };
 
 const createFallbackLoginSession = (credentials) => {
