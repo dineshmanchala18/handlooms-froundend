@@ -1,5 +1,7 @@
 package com.klu.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,10 @@ public class UserService {
 
         User savedUser = us.save(user);
         return new AuthResponse(tokenService.createToken(savedUser), savedUser);
+    }
+
+    public List<User> getAllUsers() {
+        return us.findAll();
     }
 
     private String normalizeRole(String role) {

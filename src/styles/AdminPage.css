@@ -59,8 +59,22 @@
 
 .admin-panel-card h2 {
   color: var(--primary-color);
-  margin-bottom: 0.7rem;
+  margin-bottom: 0;
   font-size: 1.05rem;
+}
+
+.admin-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.admin-panel-heading span {
+  color: #6f5540;
+  font-size: 0.82rem;
+  white-space: nowrap;
 }
 
 .admin-table-wrap {

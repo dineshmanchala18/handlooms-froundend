@@ -11,11 +11,16 @@ import com.klu.service.UserService;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(originPatterns = { "http://localhost:*", "http://127.0.0.1:*" }, allowedHeaders = "*")
+@CrossOrigin(originPatterns = { "http://localhost:*", "http://127.0.0.1:*", "https://*.vercel.app" }, allowedHeaders = "*")
 public class UserController {
 
     @Autowired
     UserService us;
+
+    @GetMapping
+    public ResponseEntity<?> getUsers() {
+        return ResponseEntity.ok(us.getAllUsers());
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {

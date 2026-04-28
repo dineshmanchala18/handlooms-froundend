@@ -1,13 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import API from '../api/API';
 import { products } from '../data/products';
 import '../styles/AdminPage.css';
 
-const users = [
+const sampleUsers = [
   { id: 'U-1001', name: 'Anita Verma', role: 'Customer', status: 'Active' },
   { id: 'U-1002', name: 'Raghu Gond', role: 'Artisan', status: 'Pending Approval' },
   { id: 'U-1003', name: 'Maya Singh', role: 'Consultant', status: 'Active' },
   { id: 'U-1004', name: 'Tara Sen', role: 'Artisan', status: 'Suspended' }
 ];
+
+const getLocalUsers = () => {
+  try {
+    return JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+  } catch {
+    return [];
+  }
+};
+
+const formatUser = (user) => ({
+  id: user.id || user.email || user.phone || crypto.randomUUID(),
+  name: user.name || user.email || user.phone || 'Unnamed User',
+  email: user.email || '-',
+  phone: user.phone || '-',
+  role: user.role || 'Customer',
+  status: user.status || 'Active'
+});
 
 const orders = [
   { id: 'ORD-9081', customer: 'Anita Verma', payment: 'Paid', amount: '$89.99', issue: 'None' },
@@ -34,7 +52,41 @@ const issues = [
 ];
 
 const AdminPage = () => {
-  const totalArtisans = users.filter((user) => user.role === 'Artisan').length;
+  const [users, setUsers] = useState([]);
+  const [usersStatus, setUsersStatus] = useState('Loading users...');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadUsers = async () => {
+      try {
+        const response = await API.get('/user');
+        const nextUsers = Array.isArray(response.data)
+          ? response.data.map(formatUser)
+          : [];
+
+        if (isMounted) {
+          setUsers(nextUsers);
+          setUsersStatus(nextUsers.length ? 'Loaded from MySQL' : 'No MySQL users found');
+        }
+      } catch {
+        const localUsers = getLocalUsers().map(formatUser);
+
+        if (isMounted) {
+          setUsers(localUsers.length ? localUsers : sampleUsers);
+          setUsersStatus(localUsers.length ? 'Loaded from browser storage' : 'Showing sample users');
+        }
+      }
+    };
+
+    loadUsers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const totalArtisans = users.filter((user) => user.role?.toLowerCase() === 'artisan').length;
   const topProducts = products
     .slice()
     .sort((a, b) => b.rating - a.rating)
@@ -73,12 +125,17 @@ const AdminPage = () => {
 
       <div className="admin-management-grid">
         <article className="admin-panel-card">
-          <h2>User Management</h2>
+          <div className="admin-panel-heading">
+            <h2>User Management</h2>
+            <span>{usersStatus}</span>
+          </div>
           <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>
                 <tr>
                   <th>User</th>
+                  <th>Email</th>
+                  <th>Phone</th>
                   <th>Role</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -88,6 +145,8 @@ const AdminPage = () => {
                 {users.map((user) => (
                   <tr key={user.id}>
                     <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.phone}</td>
                     <td>{user.role}</td>
                     <td>{user.status}</td>
                     <td className="admin-actions">
