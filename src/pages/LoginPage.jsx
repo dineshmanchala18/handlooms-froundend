@@ -62,10 +62,14 @@ const LoginPage = () => {
           email: `${formData.adminUsername || 'admin'}@local.app`,
           password: formData.password,
           role: selectedRole
-        });
-      } catch (requestError) {
-        setErrorMessage(requestError.response?.data || requestError.message || 'Login failed. Please check your admin credentials.');
-      }
+      });
+    } catch (requestError) {
+      setErrorMessage(
+        !requestError.response
+          ? 'Backend is not running. Start Spring Boot on port 8081 to read users from MySQL.'
+          : requestError.response?.data || requestError.message || 'Login failed. Please check your admin credentials.'
+      );
+    }
       return;
     }
 
@@ -102,7 +106,11 @@ const LoginPage = () => {
         role: selectedRole
       });
     } catch (requestError) {
-      setErrorMessage(requestError.response?.data || requestError.message || 'Login failed. Please check your credentials or create an account first.');
+      setErrorMessage(
+        !requestError.response
+          ? 'Backend is not running. Start Spring Boot on port 8081 to read users from MySQL.'
+          : requestError.response?.data || requestError.message || 'Login failed. Please check your credentials or create an account first.'
+      );
     }
   };
 

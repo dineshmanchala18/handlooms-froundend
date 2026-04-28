@@ -4,12 +4,9 @@ import API from '../api/API';
 export const AuthContext = createContext();
 
 const LOCAL_USERS_KEY = 'registeredUsers';
-const shouldUseRemoteAuth = import.meta.env.DEV || Boolean(import.meta.env.VITE_API_URL);
-
-const isApiUnavailable = (error) => {
-  const status = error?.response?.status;
-  return !error?.response || status === 404 || status === 405;
-};
+const hasConfiguredApiUrl = Boolean(import.meta.env.VITE_API_URL);
+const shouldUseRemoteAuth = import.meta.env.DEV || hasConfiguredApiUrl;
+const shouldUseLocalDemoAuth = !import.meta.env.DEV && !hasConfiguredApiUrl;
 
 const normalizeIdentifier = (value) => (value || '').trim().toLowerCase();
 
@@ -163,7 +160,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
-    if (!shouldUseRemoteAuth) {
+    if (shouldUseLocalDemoAuth) {
       const response = loginLocally(credentials, { allowFirstLogin: true });
       saveSession(response.user, response.token, response.user.role);
       return response.user;
@@ -174,13 +171,7 @@ export const AuthProvider = ({ children }) => {
       saveSession(response.data.user, response.data.token, response.data.user.role);
       return response.data.user;
     } catch (error) {
-      if (!isApiUnavailable(error)) {
-        throw error;
-      }
-
-      const response = loginLocally(credentials);
-      saveSession(response.user, response.token, response.user.role);
-      return response.user;
+      throw error;
     }
   };
 
@@ -194,7 +185,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData, type = 'customer') => {
-    if (!shouldUseRemoteAuth) {
+    if (shouldUseLocalDemoAuth) {
       const response = registerLocally(userData, type);
       saveSession(response.user, response.token, response.user.role);
       return response.user;
@@ -208,13 +199,7 @@ export const AuthProvider = ({ children }) => {
       saveSession(response.data.user, response.data.token, response.data.user.role);
       return response.data.user;
     } catch (error) {
-      if (!isApiUnavailable(error)) {
-        throw error;
-      }
-
-      const response = registerLocally(userData, type);
-      saveSession(response.user, response.token, response.user.role);
-      return response.user;
+      throw error;
     }
   };
 

@@ -51,6 +51,9 @@ const CreateAccountPage = () => {
       setTimeout(() => navigate('/'), 900);
     } catch (requestError) {
       setError(
+        !requestError.response
+          ? 'Backend is not running. Start Spring Boot on port 8081 to save users in MySQL.'
+          :
         requestError.response?.data ||
         requestError.message ||
         'Could not create account. Please try again.'

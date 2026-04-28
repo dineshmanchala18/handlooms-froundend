@@ -13,6 +13,14 @@ To save users into MySQL, run the Spring Boot backend locally and use the Vite d
 
 The Vercel frontend cannot write to `localhost:3306` on your computer. Vercel runs online, while your MySQL database is local to your laptop.
 
+Local flow:
+
+1. Start MySQL.
+2. Make sure the `handlooms` schema exists.
+3. Start the Spring Boot app on port `8081`.
+4. Start the frontend with `npm run dev`.
+5. Open the local Vite URL, create an account, then check MySQL.
+
 Check saved users with:
 
 ```sql
