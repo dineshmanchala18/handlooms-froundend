@@ -58,9 +58,9 @@ const ProfilePage = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    updateProfile({
+    await updateProfile({
       name: formData.name.trim(),
       email: formData.email.trim(),
       photo: formData.photo

@@ -11,10 +11,19 @@ public class Products {
     private Long id;
 
     private String productname;   
-    private int price;
+    private String category;
+    private String artisan;
+    @Column(length = 1000)
+    private String image;
+    @Column(length = 1000)
+    private String description;
+    @Column(length = 1000)
+    private String culturalNotes;
+    private Double price;
     private int Quantity;
+    private Double rating = 0.0;
 
-    public Products(Long id, String productname, int price, int quantity) {
+    public Products(Long id, String productname, Double price, int quantity) {
 		super();
 		this.id = id;
 		this.productname = productname;
@@ -45,19 +54,67 @@ public class Products {
         return productname;
     }
 
-    public void setProductname(String productname) {
+	public void setProductname(String productname) {
         this.productname = productname;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getArtisan() {
+        return artisan;
+    }
+
+    public void setArtisan(String artisan) {
+        this.artisan = artisan;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCulturalNotes() {
+        return culturalNotes;
+    }
+
+    public void setCulturalNotes(String culturalNotes) {
+        this.culturalNotes = culturalNotes;
     }
 
     public void setId(Long id) {
         this.id = id;
     }
 
-    public int getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public Double getRating() {
+        return rating;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
     }
 }

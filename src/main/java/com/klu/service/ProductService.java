@@ -35,8 +35,14 @@ public class ProductService {
 
         if (existingProduct != null) {
             existingProduct.setProductname(updatedProduct.getProductname());
+            existingProduct.setCategory(updatedProduct.getCategory());
+            existingProduct.setArtisan(updatedProduct.getArtisan());
+            existingProduct.setImage(updatedProduct.getImage());
+            existingProduct.setDescription(updatedProduct.getDescription());
+            existingProduct.setCulturalNotes(updatedProduct.getCulturalNotes());
             existingProduct.setPrice(updatedProduct.getPrice());
             existingProduct.setQuantity(updatedProduct.getQuantity());
+            existingProduct.setRating(updatedProduct.getRating());
 
             return pr.save(existingProduct);
         }

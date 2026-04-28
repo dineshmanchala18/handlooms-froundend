@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import './App.css';
+import API from './api/API';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { products } from './data/products';
@@ -18,18 +19,28 @@ import ProfilePage from './pages/ProfilePage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import ArtisanDashboardPage from './pages/ArtisanDashboardPage';
 
-const getMarketplaceProducts = () => {
+const formatProduct = (product) => ({
+  ...product,
+  id: product.id,
+  name: product.name || product.productname || '',
+  productname: product.productname || product.name || '',
+  category: product.category || '',
+  artisan: product.artisan || 'HASTAKARYA Artisan',
+  stock: Number(product.stock ?? product.quantity ?? 0),
+  quantity: Number(product.quantity ?? product.stock ?? 0),
+  price: Number(product.price ?? 0),
+  image: product.image || products[0].image,
+  description: product.description || '',
+  culturalNotes: product.culturalNotes || '',
+  rating: Number(product.rating ?? 0)
+});
+
+const getMarketplaceProducts = (remoteProducts = []) => {
   const productMap = new Map(products.map((product) => [String(product.id), product]));
 
-  try {
-    const artisanProducts = JSON.parse(localStorage.getItem('artisanProducts') || '[]');
-
-    artisanProducts.forEach((product) => {
-      productMap.set(String(product.id), product);
-    });
-  } catch {
-    return products;
-  }
+  remoteProducts.forEach((product) => {
+    productMap.set(String(product.id), formatProduct(product));
+  });
 
   return Array.from(productMap.values());
 };
@@ -41,16 +52,15 @@ const PlaceholderPage = ({ title, description }) => (
   </section>
 );
 
-const HomePage = ({ onQuickView }) => (
+const HomePage = ({ onQuickView, marketplaceProducts }) => (
   <>
     <Hero />
-    <ProductsGrid products={getMarketplaceProducts()} onQuickView={onQuickView} title="Featured Handicrafts" />
+    <ProductsGrid products={marketplaceProducts} onQuickView={onQuickView} title="Featured Handicrafts" />
   </>
 );
 
-const ProductsPage = ({ onQuickView }) => {
+const ProductsPage = ({ onQuickView, marketplaceProducts }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const marketplaceProducts = getMarketplaceProducts();
 
   const filteredProducts = marketplaceProducts.filter((product) => {
     const searchableText = [
@@ -96,6 +106,33 @@ function AppShell() {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [remoteProducts, setRemoteProducts] = useState([]);
+  const marketplaceProducts = getMarketplaceProducts(remoteProducts);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        const response = await API.get('/Product/all');
+        if (isMounted) {
+          setRemoteProducts(response.data || []);
+        }
+      } catch {
+        if (isMounted) {
+          setRemoteProducts([]);
+        }
+      }
+    };
+
+    if (isAuthenticated) {
+      loadProducts();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (
@@ -130,8 +167,8 @@ function AppShell() {
           </>
         ) : (
           <>
-            <Route path="/" element={<HomePage onQuickView={setSelectedProduct} />} />
-            <Route path="/products" element={<ProductsPage onQuickView={setSelectedProduct} />} />
+            <Route path="/" element={<HomePage onQuickView={setSelectedProduct} marketplaceProducts={marketplaceProducts} />} />
+            <Route path="/products" element={<ProductsPage onQuickView={setSelectedProduct} marketplaceProducts={marketplaceProducts} />} />
             <Route
               path="/artisans"
               element={

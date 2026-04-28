@@ -27,11 +27,19 @@ const formatUser = (user) => ({
   status: user.status || 'Active'
 });
 
-const orders = [
+const sampleOrders = [
   { id: 'ORD-9081', customer: 'Anita Verma', payment: 'Paid', amount: '$89.99', issue: 'None' },
   { id: 'ORD-9082', customer: 'Vikram Das', payment: 'Failed', amount: '$249.99', issue: 'Retry Needed' },
   { id: 'ORD-9083', customer: 'Kiran Rao', payment: 'Refunded', amount: '$129.99', issue: 'Refund Completed' }
 ];
+
+const formatOrder = (order) => ({
+  id: order.id ? `ORD-${order.id}` : order.trackingId,
+  customer: order.customerName || order.email || 'Customer',
+  payment: order.paymentStatus || 'Pending',
+  amount: `$${Number(order.totalAmount || 0).toFixed(2)}`,
+  issue: order.status || 'None'
+});
 
 const feedbackItems = [
   { type: 'Review', summary: 'Possible fake rating spike on one product', action: 'Remove / Investigate' },
@@ -54,6 +62,8 @@ const issues = [
 const AdminPage = () => {
   const [users, setUsers] = useState([]);
   const [usersStatus, setUsersStatus] = useState('Loading users...');
+  const [orders, setOrders] = useState(sampleOrders);
+  const [ordersStatus, setOrdersStatus] = useState('Showing sample orders');
 
   useEffect(() => {
     let isMounted = true;
@@ -86,6 +96,35 @@ const AdminPage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadOrders = async () => {
+      try {
+        const response = await API.get('/orders');
+        const nextOrders = Array.isArray(response.data)
+          ? response.data.map(formatOrder)
+          : [];
+
+        if (isMounted) {
+          setOrders(nextOrders.length ? nextOrders : sampleOrders);
+          setOrdersStatus(nextOrders.length ? 'Loaded from MySQL' : 'No MySQL orders found');
+        }
+      } catch {
+        if (isMounted) {
+          setOrders(sampleOrders);
+          setOrdersStatus('Showing sample orders');
+        }
+      }
+    };
+
+    loadOrders();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const totalArtisans = users.filter((user) => user.role?.toLowerCase() === 'artisan').length;
   const topProducts = products
     .slice()
@@ -94,7 +133,7 @@ const AdminPage = () => {
     .map((product) => product.name)
     .join(', ');
   const revenue = orders
-    .filter((order) => order.payment === 'Paid')
+    .filter((order) => ['Paid', 'SUCCESS'].includes(order.payment))
     .reduce((sum, order) => sum + Number(order.amount.replace('$', '')), 0)
     .toFixed(2);
 
@@ -201,7 +240,10 @@ const AdminPage = () => {
         </article>
 
         <article className="admin-panel-card">
-          <h2>Orders and Transactions</h2>
+          <div className="admin-panel-heading">
+            <h2>Orders and Transactions</h2>
+            <span>{ordersStatus}</span>
+          </div>
           <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>

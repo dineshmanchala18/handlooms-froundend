@@ -1,4 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
+import API from '../api/API';
+import { useAuth } from './AuthContext';
 
 export const CartContext = createContext();
 
@@ -9,10 +11,14 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
+  const { user } = useAuth();
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
+  const [hasLoadedRemoteCart, setHasLoadedRemoteCart] = useState(false);
+
+  const userId = user?.id ? String(user.id) : user?.email || null;
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -28,6 +34,71 @@ export const CartProvider = ({ children }) => {
     setCartCount(count);
     setCartTotal(total);
   }, [cart]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadRemoteCart = async () => {
+      if (!userId) {
+        setHasLoadedRemoteCart(true);
+        return;
+      }
+
+      try {
+        const response = await API.get(`/cart/${encodeURIComponent(userId)}`);
+        const nextCart = response.data.map((item) => ({
+          id: item.productId || item.id,
+          cartItemId: item.id,
+          name: item.name,
+          category: item.category,
+          artisan: item.artisan,
+          image: item.image,
+          price: Number(item.price || 0),
+          quantity: Number(item.quantity || 1)
+        }));
+
+        if (isMounted && nextCart.length > 0) {
+          setCart(nextCart);
+        }
+      } catch {
+        // Keep local cart available if backend is temporarily unavailable.
+      } finally {
+        if (isMounted) {
+          setHasLoadedRemoteCart(true);
+        }
+      }
+    };
+
+    loadRemoteCart();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId || !hasLoadedRemoteCart) return;
+
+    const syncCart = async () => {
+      const payload = cart.map((item) => ({
+        productId: Number(item.productId || item.id),
+        name: item.name,
+        category: item.category,
+        artisan: item.artisan,
+        image: item.image,
+        price: Number(item.price || 0),
+        quantity: Number(item.quantity || 1)
+      }));
+
+      try {
+        await API.put(`/cart/${encodeURIComponent(userId)}`, payload);
+      } catch {
+        // Local cart state remains the source of truth until the backend reconnects.
+      }
+    };
+
+    syncCart();
+  }, [cart, hasLoadedRemoteCart, userId]);
 
   const addToCart = (product) => {
     setCart(prev => {

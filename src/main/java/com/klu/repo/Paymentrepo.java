@@ -1,11 +1,8 @@
 package com.klu.repo;
 
-import org.springframework.data.repository.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.klu.model.Payment;
 
-public interface Paymentrepo extends Repository<Payment, Long> {
-
-	Payment save(Payment p);
-
+public interface Paymentrepo extends JpaRepository<Payment, Long> {
 }

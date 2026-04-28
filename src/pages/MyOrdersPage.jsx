@@ -1,16 +1,95 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API from '../api/API';
+import { useAuth } from '../context/AuthContext';
 import { orders } from '../data/orders';
 import '../styles/MyOrdersPage.css';
 
 const formatDate = (value) => new Date(value).toLocaleDateString();
 const getStatusClassName = (status) => status.toLowerCase().replace(/\s+/g, '-');
+const buildTrackingSteps = (order) => {
+  const placedAt = order.placedAt || new Date().toISOString();
+  const estimatedDelivery = order.estimatedDelivery || placedAt;
+  const isCancelled = order.status === 'Cancelled';
+  const isDelivered = order.status === 'Delivered';
+
+  return [
+    { label: 'Order Confirmed', date: formatDate(placedAt), state: isCancelled ? 'upcoming' : 'completed' },
+    { label: 'Packed by Artisan', date: 'Processing', state: isDelivered ? 'completed' : 'current' },
+    { label: 'Shipped', date: 'Pending', state: isDelivered ? 'completed' : 'upcoming' },
+    { label: 'Out for Delivery', date: 'Pending', state: isDelivered ? 'completed' : 'upcoming' },
+    { label: 'Delivered', date: isDelivered ? formatDate(estimatedDelivery) : `Expected by ${formatDate(estimatedDelivery)}`, state: isDelivered ? 'completed' : 'upcoming' }
+  ];
+};
+
+const formatOrder = (order) => ({
+  id: order.id ? `ORD-${order.id}` : order.trackingId,
+  databaseId: order.id,
+  placedAt: order.placedAt || order.createdAt,
+  estimatedDelivery: order.estimatedDelivery || order.createdAt,
+  status: order.status || 'Confirmed',
+  trackingId: order.trackingId || `TRK-HSK-${order.id}`,
+  shippingAddress: [order.shippingAddress, order.city, order.state, order.postalCode].filter(Boolean).join(', '),
+  items: (order.items || []).map((item) => ({
+    productId: item.productId || item.id,
+    quantity: item.quantity,
+    product: {
+      id: item.productId || item.id,
+      image: item.image,
+      name: item.name,
+      category: item.category,
+      artisan: item.artisan,
+      description: item.description || '',
+      price: item.price
+    }
+  })),
+  trackingSteps: buildTrackingSteps(order)
+});
 
 const MyOrdersPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [customerOrders, setCustomerOrders] = useState(orders);
+  const [ordersNotice, setOrdersNotice] = useState('');
+  const userId = user?.id ? String(user.id) : user?.email || null;
 
-  const handleCancelOrder = (orderId) => {
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadOrders = async () => {
+      if (!userId) return;
+
+      try {
+        const response = await API.get(`/orders/user/${encodeURIComponent(userId)}`);
+        if (isMounted) {
+          setCustomerOrders(response.data.map(formatOrder));
+          setOrdersNotice('');
+        }
+      } catch {
+        if (isMounted) {
+          setOrdersNotice('Showing demo orders until the backend is available.');
+        }
+      }
+    };
+
+    loadOrders();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
+
+  const handleCancelOrder = async (orderId) => {
+    const order = customerOrders.find((item) => item.id === orderId);
+
+    if (order?.databaseId) {
+      try {
+        await API.patch(`/orders/${order.databaseId}/status`, { status: 'Cancelled' });
+      } catch {
+        setOrdersNotice('Order cancelled on screen. Backend sync failed.');
+      }
+    }
+
     setCustomerOrders((currentOrders) =>
       currentOrders.map((order) =>
         order.id === orderId
@@ -38,6 +117,7 @@ const MyOrdersPage = () => {
             <p className="orders-subtitle">
               Track delivery progress and review product information for every purchase.
             </p>
+            {ordersNotice ? <p className="orders-subtitle">{ordersNotice}</p> : null}
           </div>
           <button type="button" className="orders-back-btn" onClick={() => navigate('/')}>
             Back to Home

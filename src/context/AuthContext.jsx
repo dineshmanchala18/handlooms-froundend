@@ -92,14 +92,26 @@ export const AuthProvider = ({ children }) => {
     return response.data.user;
   };
 
-  const updateProfile = (updates) => {
+  const updateProfile = async (updates) => {
     if (!user) return;
 
     const previousEmail = user.email;
     const nextUser = { ...user, ...updates };
+    const userId = user.id;
 
-    setUser(nextUser);
-    localStorage.setItem('user', JSON.stringify(nextUser));
+    if (userId && !String(userId).startsWith('local-')) {
+      try {
+        const response = await API.put(`/user/${userId}`, nextUser);
+        setUser(response.data);
+        localStorage.setItem('user', JSON.stringify(response.data));
+      } catch {
+        setUser(nextUser);
+        localStorage.setItem('user', JSON.stringify(nextUser));
+      }
+    } else {
+      setUser(nextUser);
+      localStorage.setItem('user', JSON.stringify(nextUser));
+    }
 
     const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
     const nextRegisteredUsers = registeredUsers.map((registeredUser) => (

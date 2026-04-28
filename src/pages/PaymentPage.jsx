@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import API from '../api/API';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import '../styles/PaymentPage.css';
@@ -62,16 +63,66 @@ const PaymentPage = ({ onBack }) => {
     setCurrentStep((step) => Math.max(step - 1, 1));
   };
 
-  const handlePayment = (event) => {
+  const handlePayment = async (event) => {
     event.preventDefault();
     if (cart.length === 0) {
       alert('Your cart is empty.');
       return;
     }
 
-    alert('Payment successful! Thank you for your purchase (demo).');
-    clearCart();
-    onBack();
+    const formData = new FormData(event.currentTarget);
+    const userId = user?.id ? String(user.id) : user?.email || customerInfo.email;
+    const paymentPayload = {
+      amount: Number(cartTotal.toFixed(2)),
+      method: paymentMethod,
+      cardNumber: formData.get('cardNumber') || null,
+      cardHolderName: formData.get('cardName') || null,
+      expiryDate: formData.get('expiryDate') || null,
+      cvv: formData.get('cvv') || null,
+      upiId: formData.get('upiId') || null,
+      accountNumber: formData.get('accountNumber') || null,
+      ifscCode: formData.get('ifscCode') || null,
+      paypalEmail: formData.get('paypalEmail') || null
+    };
+
+    const orderPayload = {
+      userId,
+      customerName: customerInfo.fullName,
+      email: customerInfo.email,
+      phone: customerInfo.phone,
+      shippingAddress: customerInfo.address,
+      city: customerInfo.city,
+      state: customerInfo.state,
+      postalCode: customerInfo.postalCode,
+      totalAmount: Number(cartTotal.toFixed(2)),
+      paymentMethod,
+      paymentStatus: 'SUCCESS',
+      items: cart.map((item) => ({
+        productId: Number(item.productId || item.id),
+        name: item.name,
+        category: item.category,
+        artisan: item.artisan,
+        image: item.image,
+        description: item.description,
+        price: Number(item.price || 0),
+        quantity: Number(item.quantity || 1)
+      }))
+    };
+
+    try {
+      const paymentResponse = await API.post('/payment/make', paymentPayload);
+
+      await API.post('/orders', {
+        ...orderPayload,
+        paymentStatus: paymentResponse.data.status || 'SUCCESS'
+      });
+
+      alert('Payment successful. Your order was saved.');
+      clearCart();
+      onBack();
+    } catch (error) {
+      alert(error.response?.data || error.message || 'Payment failed. Please try again.');
+    }
   };
 
   return (
@@ -273,20 +324,20 @@ const PaymentPage = ({ onBack }) => {
                   <>
                     <div className="checkout-form-group">
                       <label htmlFor="cardNumber">Card Number</label>
-                      <input id="cardNumber" type="text" placeholder="1234 5678 9012 3456" required />
+                      <input id="cardNumber" name="cardNumber" type="text" placeholder="1234 5678 9012 3456" required />
                     </div>
                     <div className="checkout-form-group">
                       <label htmlFor="cardName">Cardholder Name</label>
-                      <input id="cardName" type="text" placeholder="John Doe" required />
+                      <input id="cardName" name="cardName" type="text" placeholder="John Doe" required />
                     </div>
                     <div className="checkout-form-row">
                       <div className="checkout-form-group">
                         <label htmlFor="expiryDate">Expiry Date</label>
-                        <input id="expiryDate" type="text" placeholder="MM/YY" required />
+                        <input id="expiryDate" name="expiryDate" type="text" placeholder="MM/YY" required />
                       </div>
                       <div className="checkout-form-group">
                         <label htmlFor="cvv">CVV</label>
-                        <input id="cvv" type="text" placeholder="123" required />
+                        <input id="cvv" name="cvv" type="text" placeholder="123" required />
                       </div>
                     </div>
                   </>
@@ -295,14 +346,14 @@ const PaymentPage = ({ onBack }) => {
                 {paymentMethod === 'paypal' && (
                   <div className="checkout-form-group">
                     <label htmlFor="paypalEmail">PayPal Email</label>
-                    <input id="paypalEmail" type="email" placeholder="email@paypal.com" required />
+                    <input id="paypalEmail" name="paypalEmail" type="email" placeholder="email@paypal.com" required />
                   </div>
                 )}
 
                 {paymentMethod === 'upi' && (
                   <div className="checkout-form-group">
                     <label htmlFor="upiId">UPI ID</label>
-                    <input id="upiId" type="text" placeholder="username@upi" required />
+                    <input id="upiId" name="upiId" type="text" placeholder="username@upi" required />
                   </div>
                 )}
 
@@ -310,11 +361,11 @@ const PaymentPage = ({ onBack }) => {
                   <>
                     <div className="checkout-form-group">
                       <label htmlFor="accountNumber">Account Number</label>
-                      <input id="accountNumber" type="text" placeholder="Enter account number" required />
+                      <input id="accountNumber" name="accountNumber" type="text" placeholder="Enter account number" required />
                     </div>
                     <div className="checkout-form-group">
                       <label htmlFor="ifscCode">IFSC Code</label>
-                      <input id="ifscCode" type="text" placeholder="IFSC code" required />
+                      <input id="ifscCode" name="ifscCode" type="text" placeholder="IFSC code" required />
                     </div>
                   </>
                 )}

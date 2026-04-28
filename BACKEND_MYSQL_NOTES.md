@@ -28,3 +28,16 @@ Check saved users with:
 ```sql
 SELECT * FROM handlooms.user;
 ```
+
+Main app actions now write through the Spring Boot backend:
+
+```sql
+SELECT * FROM handlooms.user;
+SELECT * FROM handlooms.product;
+SELECT * FROM handlooms.cart_item;
+SELECT * FROM handlooms.payments;
+SELECT * FROM handlooms.customer_order;
+SELECT * FROM handlooms.customer_order_item;
+```
+
+If Spring Boot fails with `Access denied for user 'root'@'localhost'`, set `SPRING_DATASOURCE_PASSWORD` or update `spring.datasource.password` with your MySQL root password.

@@ -48,6 +48,21 @@ public class UserService {
         return us.findAll();
     }
 
+    public User updateUser(Long id, User updates) {
+        User user = us.findById(id).orElse(null);
+
+        if (user == null) {
+            return null;
+        }
+
+        user.setName(updates.getName());
+        user.setEmail(updates.getEmail());
+        user.setPhone(updates.getPhone());
+        user.setPhoto(updates.getPhoto());
+
+        return us.save(user);
+    }
+
     private String normalizeRole(String role) {
         return role == null || role.isBlank() ? "customer" : role.toLowerCase();
     }

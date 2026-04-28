@@ -14,6 +14,8 @@ public class User {
     private String name;
     private String email;
     private String phone;
+    @Column(length = 1000)
+    private String photo;
     private Long PhoneNo;
     private Double salary = 0.0;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -83,6 +85,14 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 
     public String getPassword() {
