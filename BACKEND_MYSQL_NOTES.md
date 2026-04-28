@@ -21,6 +21,8 @@ Local flow:
 4. Start the frontend with `npm run dev`.
 5. Open the local Vite URL, create an account, then check MySQL.
 
+For a deployed frontend, set `VITE_API_URL` to the public URL of your deployed Spring Boot backend. Do not set it to `localhost` on Vercel, because `localhost` would mean Vercel's server/browser context, not your laptop.
+
 Check saved users with:
 
 ```sql
