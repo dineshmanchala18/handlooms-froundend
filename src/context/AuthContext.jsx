@@ -4,6 +4,7 @@ import API from '../api/API';
 export const AuthContext = createContext();
 
 const LOCAL_USERS_KEY = 'registeredUsers';
+const shouldUseRemoteAuth = import.meta.env.DEV || Boolean(import.meta.env.VITE_API_URL);
 
 const isApiUnavailable = (error) => {
   const status = error?.response?.status;
@@ -63,7 +64,7 @@ const registerLocally = (userData, type) => {
   };
 };
 
-const loginLocally = (credentials) => {
+const loginLocally = (credentials, { allowFirstLogin = false } = {}) => {
   if (credentials.role === 'admin') {
     const adminUser = {
       id: 'admin',
@@ -93,6 +94,30 @@ const loginLocally = (credentials) => {
   });
 
   if (!userRecord) {
+    if (allowFirstLogin && (email || phone) && credentials.password) {
+      const user = {
+        id: Date.now(),
+        name: email || phone,
+        email: credentials.email,
+        phone: credentials.phone,
+        role: credentials.role || 'customer',
+        createdAt: new Date().toISOString()
+      };
+
+      saveLocalUsers([
+        ...users,
+        {
+          ...user,
+          password: credentials.password
+        }
+      ]);
+
+      return {
+        token: createLocalToken(user),
+        user
+      };
+    }
+
     throw new Error('Login failed. Please check your credentials or create an account first.');
   }
 
@@ -138,6 +163,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
+    if (!shouldUseRemoteAuth) {
+      const response = loginLocally(credentials, { allowFirstLogin: true });
+      saveSession(response.user, response.token, response.user.role);
+      return response.user;
+    }
+
     try {
       const response = await API.post('/user/login', credentials);
       saveSession(response.data.user, response.data.token, response.data.user.role);
@@ -163,6 +194,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData, type = 'customer') => {
+    if (!shouldUseRemoteAuth) {
+      const response = registerLocally(userData, type);
+      saveSession(response.user, response.token, response.user.role);
+      return response.user;
+    }
+
     try {
       const response = await API.post('/user/register', {
         ...userData,
